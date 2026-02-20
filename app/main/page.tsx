@@ -70,6 +70,8 @@ export default function Main() {
         }
       );
 
+      console.log(payload)
+
       if (!response.ok) {
         const err = await response.json();
         throw new Error(err?.error || "Error consultando productos");
