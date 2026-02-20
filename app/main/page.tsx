@@ -59,16 +59,13 @@ export default function Main() {
         cod_clas_vig: selectedItems.clasedevigencia?.key || "",
       };
 
-      const response = await fetch(
-        "https://l5243-iflmap.hcisbp.us2.hana.ondemand.com/http/catalogo_y2_prd",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      const response = await fetch("/api/catalogo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
       console.log(payload)
 
