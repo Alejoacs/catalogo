@@ -45,7 +45,7 @@ export default function Main() {
     setError(null);
 
     try {
-      const queryParams = new URLSearchParams({
+      const payload = {
         zona: selectedItems.zona?.code || "",
         material: "",
         color: selectedItems.color?.key || "",
@@ -57,12 +57,16 @@ export default function Main() {
         cod_sublinea: selectedItems.sublinea?.key || "",
         cod_grupo: selectedItems.grupo?.key || "",
         cod_clas_vig: selectedItems.clasedevigencia?.key || "",
-      });
+      };
 
       const response = await fetch(
-        `/api/sap/catalogo`,
+        "https://l5243-iflmap.hcisbp.us2.hana.ondemand.com/http/catalogo_y2_prd",
         {
           method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
         }
       );
 
@@ -74,7 +78,6 @@ export default function Main() {
       const data = await response.json();
       console.log("Respuesta completa SAP:", data);
 
-      // Manejo para estructura SAP OData
       const productosFinal =
         data?.d?.results ??
         data?.results ??
