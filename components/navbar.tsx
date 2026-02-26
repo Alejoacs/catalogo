@@ -6,11 +6,26 @@ import { Input } from "@heroui/input";
 import NextLink from "next/link";
 
 import { ThemeSwitch } from "@/components/theme-switch";
-import { SearchIcon, Logo, } from "@/components/icons";
+import { SearchIcon } from "@/components/icons";
 import { DropdownUser } from "./dropdownuser";
-import { useSession } from "next-auth/react";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+import { useCatalogContext } from "@/context/CatalogContext";
 
 export const Navbar = () => {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const { profile, setMaterialSearch } = useCatalogContext();
+  const [localSearch, setLocalSearch] = useState("");
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  const isDark = resolvedTheme === "dark";
+
   const searchInput = (
     <Input
       aria-label="Buscar"
@@ -18,48 +33,47 @@ export const Navbar = () => {
         inputWrapper: "bg-default-100",
         input: "text-sm",
       }}
-      endContent={
-        <Kbd className="hidden lg:inline-block" keys={["command"]}>
-          K
-        </Kbd>
-      }
       labelPlacement="outside"
-      placeholder="Buscar..."
+      placeholder="Buscar por material (7 dígitos)"
       startContent={
         <SearchIcon className="text-base text-default-400 pointer-events-none flex-shrink-0" />
       }
       type="search"
+      value={localSearch}
+      onChange={(e) => {
+        const value = e.target.value.replace(/\D/g, ""); // solo números
+
+        if (value.length <= 7) {
+          setLocalSearch(value);
+
+          // 👇 se actualiza automáticamente
+          if (/^\d{7}$/.test(value)) {
+            setMaterialSearch(value);
+          } else {
+            setMaterialSearch("");
+          }
+        }
+      }}
     />
   );
-
-  const { data: session } = useSession();
 
   return (
     <HeroUINavbar maxWidth="xl" position="sticky">
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-1" href="/main">
-            <img src="/logo.png" className="w-30" alt="" />
+            <img src={isDark ? "/logod.png" : "/logo.png"} className="w-30" alt="Logo de Velez" />
           </NextLink>
         </NavbarBrand>
       </NavbarContent>
 
-      <NavbarContent
-        className="hidden sm:flex basis-1/5 sm:basis-full"
-        justify="end"
-      >
+      <NavbarContent className="hidden sm:flex basis-1/5 sm:basis-full" justify="end" >
         <NavbarItem className="hidden sm:flex gap-2">
           <ThemeSwitch />
         </NavbarItem>
         <NavbarItem className="hidden lg:flex">{searchInput}</NavbarItem>
         <NavbarItem className="hidden sm:flex gap-2">
-          <DropdownUser
-            name={session?.user?.name ?? ""}
-            mail={session?.user?.email ?? ""}
-            picture={session?.user?.image ?? ""}
-            Country={(session?.user as any)?.country ?? ""}
-            type={1}
-          />
+          <DropdownUser name={profile?.displayName ?? ""} mail={profile?.mail ?? ""} picture={profile?.picture ?? ""} Country={profile?.countryCode ?? ""} type={1} />
         </NavbarItem>
       </NavbarContent>
 
@@ -69,20 +83,12 @@ export const Navbar = () => {
       </NavbarContent>
 
       <NavbarMenu className="flex flex-col h-full">
-        {/* arriba */}
         <div>
           {searchInput}
         </div>
 
-        {/* abajo del todo */}
         <div className="mt-auto pb-4">
-          <DropdownUser
-            name={session?.user?.name ?? ""}
-            mail={session?.user?.email ?? ""}
-            picture={session?.user?.image ?? ""}
-            Country={(session?.user as any)?.country ?? ""}
-            type={2}
-          />
+          <DropdownUser name={profile?.displayName ?? ""} mail={profile?.mail ?? ""} picture={profile?.picture ?? ""} Country={profile?.countryCode ?? ""} type={2} />
         </div>
       </NavbarMenu>
     </HeroUINavbar>

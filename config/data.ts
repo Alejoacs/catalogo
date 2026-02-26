@@ -13,9 +13,9 @@ export const tiendas = [
 ]
 
 export const calidad = [
-    { key: "1", label: "CALIDAD 1", code: "1" },
-    { key: "2", label: "CALIDAD 2", code: "2" },
-    { key: "3", label: "CALIDAD 3", code: "3" },
+    { key: "1", NOMBRE_MOSTRAR: "CALIDAD 1", code: "1" },
+    { key: "2", NOMBRE_MOSTRAR: "CALIDAD 2", code: "2" },
+    { key: "3", NOMBRE_MOSTRAR: "CALIDAD 3", code: "3" },
 ]
 
 export const sublineas = [
