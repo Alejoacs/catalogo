@@ -6,6 +6,7 @@ import { CheckboxGroup, Checkbox } from "@heroui/checkbox";
 import { SelectFilterNavbar, Item } from "./selectfilternavbar";
 import { calidad as calidadConfig } from "@/config/data";
 import { useCatalogContext } from "@/context/CatalogContext";
+import { Button } from "@heroui/button";
 
 type ApiFilterRow = {
   TIPO_FILTRO: string;
@@ -33,7 +34,7 @@ type NavbarFiltersProps = {
 
 export const NavbarFilters = () => {
   const [moreFilters, setMoreFilters] = useState(false);
-  const { filters, setSelectedItems, selectedItems, fetchProductos, setModo } = useCatalogContext();
+  const { filters, setSelectedItems, selectedItems, fetchProductos, setModo, loading } = useCatalogContext();
   const zonaSeleccionada = !!selectedItems?.Zona;
 
   const cfg = useMemo(() => {
@@ -162,22 +163,15 @@ export const NavbarFilters = () => {
           )}
 
           <div className="col-span-3 flex justify-end pr-4 gap-8">
-            <button type="button" className="text-smcol-span-3" onClick={handleClear}>
+            <Button type="button" className="text-smcol-span-3" onPress={handleClear} variant="light">
               Limpiar filtros
-            </button>
-            <button type="button" onClick={() => setMoreFilters((v) => !v)} className="text-sm col-span-3">
+            </Button>
+            <Button type="button" onPress={() => setMoreFilters((v) => !v)} className="text-sm col-span-3" variant="light">
               {moreFilters ? "Menos filtros" : "Más filtros"}
-            </button>
-            <button
-              className={`px-2 py-2 rounded text-[14px] ${zonaSeleccionada
-                ? "bg-black text-white"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                }`}
-              disabled={!zonaSeleccionada}
-              onClick={fetchProductos}
-            >
-              Buscar
-            </button>
+            </Button>
+            <Button isLoading={loading} disabled={!zonaSeleccionada} onPress={fetchProductos}>
+              {loading ? "Cargando..." : "Aplicar filtros"}
+            </Button>
           </div>
         </div>
       </CardBody>

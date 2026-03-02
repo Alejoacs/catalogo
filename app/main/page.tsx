@@ -5,6 +5,7 @@ import { Pagination } from "@heroui/pagination";
 import { useCatalogContext } from "@/context/CatalogContext";
 import { ProductCard } from "@/components/ProductCard";
 import { NavbarFilters } from "@/components/navbarfilters";
+import { Spinner } from "@heroui/spinner";
 
 export default function Main() {
   const { productos, loading } = useCatalogContext();
@@ -31,7 +32,9 @@ export default function Main() {
 
       {loading && (
         <div className="p-6">
-          <p>Cargando...</p>
+          <div className="w-full flex justify-center items-center">
+            <Spinner variant="wave" color="default" />
+          </div>
         </div>
       )}
 

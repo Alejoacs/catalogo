@@ -38,6 +38,7 @@ export const Navbar = () => {
       startContent={
         <SearchIcon className="text-base text-default-400 pointer-events-none flex-shrink-0" />
       }
+      size="lg"
       type="search"
       value={localSearch}
       onChange={(e) => {

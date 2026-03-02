@@ -50,8 +50,8 @@ export function useCatalog() {
         const countryMap: Record<string, string> = {
             colombia: "COL",
             chile: "CHL",
-            peru: "PER",
-            panama: "PAN",
+            perú: "PER",
+            panamá: "PAN",
             guatemala: "GTM",
         };
 
@@ -79,6 +79,7 @@ export function useCatalog() {
 
             const data = await response.json();
             setFilters(data.select_response.row);
+            console.log(data)
         } catch (error) {
             console.error("Error fetching filters:", error);
         }
@@ -203,47 +204,52 @@ export function useCatalog() {
                 }
             );
 
-            if (!response.ok) {
-                throw new Error("Error al consultar detalle");
-            }
+            if (!response.ok) throw new Error("Error al consultar detalle");
 
             const data = await response.json();
-            console.log("Detalle recibido:", data);
-
-            if (!Array.isArray(data) || data.length === 0) {
-                return null;
-            }
+            if (!Array.isArray(data) || data.length === 0) return null;
 
             const base = data[0];
 
-            // 🔵 Obtener filtros de color
-            const colorFilters = filters.filter(
-                (f: any) => f.TIPO_FILTRO === "COLOR"
-            );
+            const colorFilters = filters.filter((f: any) => f.TIPO_FILTRO === "COLOR");
+            const tallaFilters = filters.filter((f: any) => f.TIPO_FILTRO === "TALLA");
 
             const coloresMap = new Map<string, any>();
-            const tallasSet = new Set<string>();
+            const tallasMap = new Map<string, any>();
             const tiendasMap = new Map<string, any>();
 
+            // ✅ 1) PRIMERO: obtener tallas reales del inventario
+            const tallasDisponibles = new Set<string>();
             data.forEach((item: any) => {
-                // 🔎 Buscar objeto completo del color
-                const colorMatch = colorFilters.find(
-                    (c: any) => c.ID === item.color
+                if (item.talla && item.talla !== "-") {
+                    tallasDisponibles.add(String(item.talla)); // ej "003-TZD"
+                }
+            });
+
+            // ✅ 2) LUEGO: con esas tallas, buscar el objeto real en filtros
+            tallasDisponibles.forEach((tallaCode) => {
+                const [idParte, attrParte] = tallaCode.split("-"); // "003", "TZD"
+                if (!idParte || !attrParte) return;
+
+                const tallaMatch = tallaFilters.find(
+                    (t: any) =>
+                        String(t.ID) === String(idParte) &&
+                        String(t.ATRIBUTO_EXTRA) === String(attrParte)
                 );
 
-                if (colorMatch) {
-                    coloresMap.set(colorMatch.ID, colorMatch);
+                if (tallaMatch) {
+                    // guardo el objeto completo del filtro, como haces con colores
+                    tallasMap.set(tallaMatch.ID + "-" + tallaMatch.ATRIBUTO_EXTRA, tallaMatch);
                 }
+            });
 
-                // 👕 Tallas
-                if (item.talla && item.talla !== "-") {
-                    tallasSet.add(item.talla);
-                }
+            // colores + tiendas (igual que ya haces)
+            data.forEach((item: any) => {
+                const colorMatch = colorFilters.find((c: any) => c.ID === item.color);
+                if (colorMatch) coloresMap.set(colorMatch.ID, colorMatch);
 
-                // 🏬 Tiendas
                 if (item.codigo && item.centro) {
                     const nombreCentro = item.centro.split("-")[1] ?? item.centro;
-
                     tiendasMap.set(item.codigo, {
                         codigo: item.codigo,
                         nombre: nombreCentro.trim(),
@@ -254,20 +260,19 @@ export function useCatalog() {
             });
 
             const detalleAgrupado = {
-                ...base, // ← mantiene TODOS los campos originales
-
+                ...base,
                 colores: Array.from(coloresMap.values()),
-                tallas: Array.from(tallasSet).sort(),
-
+                // ✅ objetos reales de talla (filtros)
+                tallas: Array.from(tallasMap.values()).sort(
+                    (a: any, b: any) => Number(a.NOMBRE_MOSTRAR) - Number(b.NOMBRE_MOSTRAR)
+                ),
                 inventarioRaw: data,
-
                 totalTiendas: tiendasMap.size,
                 totalColores: coloresMap.size,
-                totalTallas: tallasSet.size,
+                totalTallas: tallasMap.size,
             };
 
-            console.log("Detalle agrupado:", detalleAgrupado);
-
+            console.log(detalleAgrupado)
             return detalleAgrupado;
         } catch (error) {
             console.error(error);
